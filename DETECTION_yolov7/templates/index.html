@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, shrink-to-fit=no"
+    />
+    <link
+      rel="stylesheet"
+      href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css"
+      integrity="sha384-GJzZqFGwb1QTTN6wy59ffF1BuGJpLSa9DkKMp0DgiMDm4iYMj70gZWKYbI706tWS"
+      crossorigin="anonymous"
+    />
+    <link rel="stylesheet" href="/static/style.css" />
+
+    <title>yolov7 object detection</title>
+    <style>
+        body {
+          background: #333333;
+        }
+  
+        .container {
+          text-align: center;
+          display: grid;
+          place-items: center;
+          height: 100vh;
+        }
+  
+        .box {
+          background-color: #1a1a1a;
+          margin: 10px;
+          border-radius: 10px;
+          box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        thead tr td {
+          background: #1a1a1a;
+          color: #fff;
+          padding: 10px;
+        }
+        thead tr td:first-child {
+          border-top-left-radius: 8px;
+          border-bottom-left-radius: 8px;
+        }
+        thead tr td:last-child {
+          border-top-right-radius: 8px;
+          border-bottom-right-radius: 8px;
+        }
+        tbody tr td {
+          padding: 10px;
+        }
+        .modal-content {
+          background: #1a1a1a;
+        }
+      </style>
+      
+  </head>
+  <body class="position-relative">
+    <img
+      src="../static/images/EllipseLeft.svg"
+      class="position-absolute"
+      style="top: -221px; z-index: 1"
+    />
+    <img
+      src="../static/images/EllipseRight.svg"
+      class="position-absolute"
+      style="top: -221px; right: 0; z-index: 1"
+    />
+    <div class="container">
+      <div
+        class="w-100 d-flex justify-content-center text-white"
+        style="z-index: 2"
+      >
+        <div class="box col-md-8">
+          <form
+            class="form-signin p-3"
+            method="post"
+            enctype="multipart/form-data"
+            action="/"
+            name="form1"
+          >
+            <h1 class="h3 mb-3 font-weight-normal">Upload any image</h1>
+            <input
+              type="file"
+              name="file"
+              class="form-control-file"
+              id="inputfile"
+            />
+            <br />
+            <button class="btn btn-lg btn-primary btn-block" type="submit">
+              Upload
+            </button>
+            <p class="mt-5 mb-3 text-muted">Built using Pytorch & Flask</p>
+          </form>
+        </div>
+      </div>
+      <br />
+
+      <!-- Detected image display -->
+      <!-- <img id="detected-image" style="display: none;" src="{{ url_for('display', filename=image_path) }}" style="height:640; width:640px"/> -->
+      <!-- Nutritional plot display -->
+      <!-- <img id="nutritional-plot" style="display: none;" src="{{ url_for('static', filename=g1_plot) }}" style="width: 100%; max-width: 640px; height: auto; display: block; margin: 0 auto;"/> -->
+
+      <!-- Detected image display -->
+      <!-- <img id="detected-image" style="display: none; max-width: 100%; height: auto; max-height: 480px; display: block; margin: 0 auto;" src="{{ url_for('display', filename=image_path) }}" /> -->
+
+      <!-- Nutritional plot display -->
+      <!-- <img
+        id="nutritional-plot"
+        style="
+          display: none;
+          max-width: 100%;
+          height: auto;
+          max-height: 640px;
+          display: block;
+          margin: 20px auto 0;
+        "
+        src="{{ url_for('static', filename=g1_plot) }}"
+      /> -->
+
+      <table class="w-100" style="z-index: 2">
+        <thead>
+          <tr>
+            <td>Detected Image</td>
+            <td>Plot</td>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td style="width: 40%">
+              <img
+                id="detected-image"
+                class="w-100"
+                src="{{ url_for('display', filename=image_path) }}"
+                style="border-radius: 5px"
+              />
+            </td>
+            <td style="width: 60%">
+                <img
+                    id="nutritional-plot"
+                    class="w-100"
+                    src="{{ url_for('static', filename=g1_plot) }}"
+                    style="border-radius: 5px; cursor: pointer;"
+                />
+            </td>
+            
+          </tr>
+        </tbody>
+      </table>
+      <div id="modal" class="modal" tabindex="-1" role="dialog">
+        <div class="modal-dialog modal-xl" role="document">
+          <div class="modal-content">
+            <div class="modal-header px-3 py-1 border-0" style="padding: 10px">
+              <h5 class="modal-title text-white">Plot</h5>
+              <button
+                type="button"
+                class="close"
+                data-dismiss="modal"
+                aria-label="Close"
+                onclick="closeModal()"
+              >
+                <span aria-hidden="true" class="text-white">&times;</span>
+              </button>
+            </div>
+            <div class="modal-body">
+              <img
+                id="modal-plot"
+                class="w-100"
+                src="{{ url_for('static', filename=g1_plot) }}"
+                style="border-radius: 5px"
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+      <br />
+      <br />
+
+      <script>
+        document.getElementById("detected-image").onload = function () {
+          this.style.display = "block";
+        };
+
+        document.getElementById("nutritional-plot").onload = function () {
+          this.style.display = "block";
+        };
+
+        function openModal(image_path) {
+          let modal = document.getElementById("modal");
+          let modalPlot = document.getElementById("modal-plot");
+          modal.style.display = "block";
+          modalPlot.setAttribute("src", image_path);
+        }
+        function closeModal() {
+          let modal = document.getElementById("modal");
+          modal.style.display = "none";
+        }
+      </script>
+
+      <!-- <script>
+      document.getElementById("nutritional-plot").onload = function () {
+            this.style.display = "block";
+        };  
+    </script> -->
+    </div>
+
+    <script
+      src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
+      integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"
+      crossorigin="anonymous"
+    ></script>
+    <script
+      src="https://cdn.jsdelivr.net/npm/popper.js@1.14.6/dist/umd/popper.min.js"
+      integrity="sha384-wHAiFfRlMFy6i5SRaxvfOCifBUQy1xHdJ/yoi7FRNXMRBu5WHdZYu1hA6ZOblgut"
+      crossorigin="anonymous"
+    ></script>
+    <script
+      src="https://cdn.jsdelivr.net/npm/bootstrap@4.2.1/dist/js/bootstrap.min.js"
+      integrity="sha384-B0UglyR+jN6CkvvICOB2joaf5I4l3gm9GU6Hc1og6Ls7i6U/mkkaduKaBhlAXv9k"
+      crossorigin="anonymous"
+    ></script>
+  </body>
+</html>
